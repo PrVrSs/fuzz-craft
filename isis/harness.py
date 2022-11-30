@@ -13,14 +13,14 @@ def prepare_harness_dir():
 
 def harness():
     codeql_run()
-    template = Template()
-    data = defaultdict(list)
 
+    data = defaultdict(list)
     for row in read_csv(settings['decode_result']):
         data[row['func_name']].append(row['annotation'])
 
     prepare_harness_dir()
 
+    template = Template()
     for function, arguments in data.items():
         file = str(Path(settings['harness_dir']) / f'fuzz_{function}.py')
         with open(file, mode='w', encoding='utf-8') as fd:

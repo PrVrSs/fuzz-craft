@@ -1,3 +1,3 @@
 # Isis - WIP
 
-*Isis is a fuzzing harness.*
+*Isis is a toolkit for fuzzing harnesses.*
