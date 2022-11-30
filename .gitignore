@@ -1,0 +1,19 @@
+# Unit test / coverage reports
+.coverage
+coverage.xml
+.pytest_cache/
+
+
+# Environments
+venv/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# codeql
+.cache/
+.codeql/
+
+dist

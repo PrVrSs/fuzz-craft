@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "isis"
+version = "0.0.1"
+description = "Isis is a fuzzing harness."
+authors = ["Sergey Reshetnikov <resh.sersh@gmail.com>"]
+license = "Apache-2.0"
+
+readme = "README.md"
+repository = "https://github.com/PrVrSs/isis"
+homepage = "https://github.com/PrVrSs/isis"
+
+keywords = [
+    "fuzzing",
+    "harness",
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Jinja2 = "^3.1.2"
+dynaconf = "^3.1.11"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+pylint = "^2.15.7"
+mypy = "^0.991"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

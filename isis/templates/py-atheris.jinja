@@ -1,0 +1,12 @@
+import sys
+
+import atheris
+
+
+@atheris.instrument_func
+def test_one_input(data):
+  {{ function }}({{ arguments }})
+
+
+atheris.Setup(sys.argv, test_one_input)
+atheris.Fuzz()

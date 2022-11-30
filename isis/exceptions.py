@@ -1,0 +1,2 @@
+class IsisException(Exception):
+    pass
