@@ -1,0 +1,7 @@
+name: isis/cpp
+version: 0.0.0-dev
+extractor: cpp
+library: true
+dependencies:
+  codeql/cpp-all: "0.4.3"
+  codeql/ssa: "0.0.4"
