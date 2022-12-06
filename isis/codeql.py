@@ -1,57 +1,47 @@
 import shutil
 from pathlib import Path
-from subprocess import check_call
-from typing import final
+from typing import Any, Type, final
 
+from isis.exceptions import IsisException
 from isis.settings import settings
+from isis.utils import is_cmd_available, exec_cmd
 
 
-ROOT = '.codeql'
-DATABASE = 'database'
+ROOT: str = '.codeql'
+DATABASE: str = 'database'
 QUERIES_BASE_PATH: Path = Path(__file__).parent.resolve() / 'ql'
+LANGUAGE_QL_MAP: dict[str, Type['BaseQL']] = {}
 
 
-def is_codeql_available(cmd: str = 'codeql') -> bool:
-    if shutil.which(cmd) is None:
-        return False
+class BaseQL:
+    LANGUAGE: str
+    QUERY_PATH: Path
 
-    return True
-
-
-def reset_directory(path: str) -> None:
-    if Path(path).exists():
-        shutil.rmtree(path)
-
-    Path(path).mkdir(parents=True)
-
-
-def exec_cmd(cmd: list[str]):
-    return check_call(cmd)
-
-
-class QL:
-
-    LANGUAGE = None
-    QUERY_PATH = None
-
-    def __init__(self, ql, source, project_directory: Path, is_first_run: bool = True):
-        self._ql = ql
+    def __init__(
+            self,
+            codeql_cmd: str,
+            source: str,
+            project_directory: str,
+    ):
+        self._codeql_cmd = codeql_cmd
         self._source = source
-        self._project_directory = project_directory
+        self._project_directory = Path(project_directory)
 
-        assert is_codeql_available(self._ql) is True, 'Not found CodeQL.'
+        assert is_cmd_available(self._codeql_cmd) is True, 'Not found CodeQL.'
         assert self.LANGUAGE is not None, 'Langauge should be defined.'
 
-        if is_first_run is True:
-            self._create_output_directory()
-            self._create_database_directory()
-            self._init_database()
+        self._create_output_directory()
+        self._create_database_directory()
+        self._init_database()
 
-    def update_database(self):
+    def __init_subclass__(cls) -> None:
+        LANGUAGE_QL_MAP[cls.__name__.lower()] = cls
+
+    def update_database(self) -> None:
         shutil.rmtree(self._database)
         self._init_database()
 
-    def run_query(self, query):
+    def run_query(self, query: str) -> None:
         exec_cmd(self._codeql_query_cmd(query))
         exec_cmd(self._decode_cmd(query))
 
@@ -75,25 +65,26 @@ class QL:
     @property
     def _create_database_cmd(self) -> list[str]:
         return [
-            self._ql,
+            self._codeql_cmd,
             'database', 'create',
             str(self._database),
             f'--language={self.LANGUAGE}',
             f'--source-root={self._source}',
+            '--overwrite'
         ]
 
-    def _codeql_query_cmd(self, query_file: str):
+    def _codeql_query_cmd(self, query_file: str) -> list[str]:
         return [
-            self._ql,
+            self._codeql_cmd,
             'query', 'run',
             str(self.QUERY_PATH / query_file),
             '-o', str((self._root / query_file).with_suffix('.bqrs')),
             '-d', str(self._database)
         ]
 
-    def _decode_cmd(self, query_file: str):
+    def _decode_cmd(self, query_file: str) -> list[str]:
         return [
-            self._ql,
+            self._codeql_cmd,
             'bqrs', 'decode',
             '--format=csv',
             str((self._root / query_file).with_suffix('.bqrs')),
@@ -102,13 +93,13 @@ class QL:
 
 
 @final
-class PY(QL):
+class PY(BaseQL):
     LANGUAGE = 'python'
     QUERY_PATH = QUERIES_BASE_PATH / 'python'
 
 
 @final
-class CPP(QL):
+class CPP(BaseQL):
     LANGUAGE = 'cpp'
     QUERY_PATH = QUERIES_BASE_PATH / 'c-cpp'
 
@@ -120,16 +111,22 @@ class CPP(QL):
         ]
 
 
-def run():
-    py_ql = PY(
-        ql=settings['codeQL'],
-        source=settings['source'],
-        project_directory=Path(settings['project_directory']),
-        # is_first_run=False,
-    )
+class CodeQL:
+    def __call__(self, language: str, /, **kwargs: Any) -> BaseQL:
+        try:
+            return LANGUAGE_QL_MAP[language](**kwargs)
+        except KeyError:
+            raise IsisException(f'Not supported: {language}') from None
 
-    py_ql.run_query('function.ql')
+
+codeql = CodeQL()
 
 
 if __name__ == '__main__':
-    run()
+    py_codeql = codeql(
+        'py',
+        codeql_cmd=settings['codeQL'],
+        source=settings['source'],
+        project_directory=settings['project_directory'],
+    )
+    py_codeql.run_query('function.ql')

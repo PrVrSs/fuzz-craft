@@ -1,4 +1,7 @@
 import csv
+import shutil
+from pathlib import Path
+from subprocess import check_call
 from typing import Iterator
 
 
@@ -6,3 +9,21 @@ def read_csv(file: str, ) -> Iterator[dict]:
     with open(file, mode='r', encoding='utf-8') as fd:
         for row in csv.DictReader(fd):
             yield row
+
+
+def is_cmd_available(cmd: str = 'codeql') -> bool:
+    if shutil.which(cmd) is None:
+        return False
+
+    return True
+
+
+def reset_directory(path: str) -> None:
+    if Path(path).exists():
+        shutil.rmtree(path)
+
+    Path(path).mkdir(parents=True)
+
+
+def exec_cmd(cmd: list[str]) -> int:
+    return check_call(cmd)

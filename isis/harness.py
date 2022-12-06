@@ -1,9 +1,9 @@
 from collections import defaultdict
 from pathlib import Path
 
+from isis.codeql import codeql
 from isis.settings import settings
 from isis.template import render, TemplateEnum
-from isis.codeql import run as codeql_run
 from isis.utils import read_csv
 
 
@@ -12,7 +12,13 @@ def prepare_harness_dir():
 
 
 def harness():
-    codeql_run()
+    py_codeql = codeql(
+        'py',
+        codeql_cmd=settings['codeQL'],
+        source=settings['source'],
+        project_directory=settings['project_directory'],
+    )
+    py_codeql.run_query('function.ql')
 
     data = defaultdict(list)
     for row in read_csv(settings['decode_result']):
