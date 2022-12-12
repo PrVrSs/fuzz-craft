@@ -11,7 +11,7 @@ def read_csv(file: str, ) -> Iterator[dict]:
             yield row
 
 
-def is_cmd_available(cmd: str = 'codeql') -> bool:
+def is_cmd_available(cmd: str) -> bool:
     if shutil.which(cmd) is None:
         return False
 

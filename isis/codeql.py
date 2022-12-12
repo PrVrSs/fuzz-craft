@@ -70,7 +70,7 @@ class BaseQL:
             str(self._database),
             f'--language={self.LANGUAGE}',
             f'--source-root={self._source}',
-            '--overwrite'
+            '--overwrite',
         ]
 
     def _codeql_query_cmd(self, query_file: str) -> list[str]:
@@ -104,7 +104,7 @@ class CPP(BaseQL):
     QUERY_PATH = QUERIES_BASE_PATH / 'c-cpp'
 
     @property
-    def _create_database_cmd(self):
+    def _create_database_cmd(self) -> list[str]:
         return [
             *super()._create_database_cmd,
             '--command=make',
@@ -124,7 +124,7 @@ codeql = CodeQL()
 
 if __name__ == '__main__':
     py_codeql = codeql(
-        'py',
+        'cpp',
         codeql_cmd=settings['codeQL'],
         source=settings['source'],
         project_directory=settings['project_directory'],
