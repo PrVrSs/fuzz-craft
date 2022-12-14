@@ -123,10 +123,10 @@ codeql = CodeQL()
 
 
 if __name__ == '__main__':
-    py_codeql = codeql(
+    cpp_codeql = codeql(
         'cpp',
         codeql_cmd=settings['codeQL'],
         source=settings['source'],
         project_directory=settings['project_directory'],
     )
-    py_codeql.run_query('function.ql')
+    cpp_codeql.run_query('function.ql')

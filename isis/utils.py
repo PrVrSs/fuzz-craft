@@ -4,8 +4,10 @@ from pathlib import Path
 from subprocess import check_call
 from typing import Iterator
 
+import magic
 
-def read_csv(file: str, ) -> Iterator[dict]:
+
+def read_csv(file: str) -> Iterator[dict]:
     with open(file, mode='r', encoding='utf-8') as fd:
         for row in csv.DictReader(fd):
             yield row
@@ -16,6 +18,10 @@ def is_cmd_available(cmd: str) -> bool:
         return False
 
     return True
+
+
+def get_mime(file: str) -> str:
+    return magic.from_file(file, mime=True)
 
 
 def reset_directory(path: str) -> None:
