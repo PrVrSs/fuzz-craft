@@ -7,7 +7,7 @@ from typing import Iterator
 import magic
 
 
-def read_csv(file: str) -> Iterator[dict]:
+def read_csv(file: str) -> Iterator[dict[str, str]]:
     with open(file, mode='r', encoding='utf-8') as fd:
         for row in csv.DictReader(fd):
             yield row

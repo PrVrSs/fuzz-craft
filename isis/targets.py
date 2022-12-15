@@ -1,6 +1,7 @@
+import re
 from collections import defaultdict
 from functools import cached_property
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from pathlib import Path
 from typing import NamedTuple
 
@@ -9,6 +10,7 @@ import lief
 from isis.constants import SHARED_LIB
 from isis.utils import read_csv, get_mime
 from isis.settings import settings
+from isis.libfuzzer import ConsumeIntegral, ConsumeBool, ConsumeFloatingPoint
 
 
 class CPPFunctionArgumentSchema(NamedTuple):
@@ -23,7 +25,8 @@ class CPPFunctionSchema(NamedTuple):
     location: str
 
 
-def convert_ql_to_schema(data: dict[str, list[str]]) -> list[CPPFunctionSchema]:
+def convert_ql_to_schema(
+        data: dict[tuple[str, str, str], list[tuple[str, str]]]) -> list[CPPFunctionSchema]:
     return [
         CPPFunctionSchema(
             name=function,
@@ -81,8 +84,62 @@ class File:
         self._binary.write(f'lib_{function}.so')
 
 
-def prepare_argument(argument_type):
-    pass
+def get_template_argument(argument: str, position: int) -> str:
+    if 'float' in argument or 'double' in argument:
+        return f'auto argument_{position} = {ConsumeFloatingPoint(argument)};'
+
+    if 'bool' in argument:
+        return f'auto argument_{position} = {ConsumeBool(argument)};'
+
+    return f'auto argument_{position} = {ConsumeIntegral(argument)};'
+
+
+def prepare_double_pointer(argument: str, number: int) -> tuple[str, str]:
+    template_argument = get_template_argument(argument=argument, position=number)
+
+    template_argument_ptr = f'{argument} *ptr_{number} = &argument_{number};'
+    template_argument_double_ptr = f'{argument} **double_ptr_{number} = &ptr_{number}'
+
+    template_param = f'double_ptr_{number}'
+
+    return '\n'.join([
+        template_argument,
+        template_argument_ptr,
+        template_argument_double_ptr,
+    ]), template_param
+
+
+def prepare_pointer(argument: str, number: int) -> tuple[str, str]:
+    template_argument = get_template_argument(argument=argument, position=number)
+
+    template_argument_ptr = f'{argument} *ptr_{number} = &argument_{number};'
+    template_param = f'ptr_{number}'
+
+    return '\n'.join([template_argument, template_argument_ptr]), template_param
+
+
+def prepare_type(argument: str, number: int):
+    template_argument = get_template_argument(argument=argument, position=number)
+    template_param = f'argument_{number}'
+
+    return template_argument, template_param
+
+
+ARGUMENT_REGEXP = re.compile(r'^(?P<Type>\w+(\s\w+)?)\s?(?P<Star>\*{0,2})$')
+
+
+def prepare_argument(argument_type, position):
+    result = ARGUMENT_REGEXP.match(argument_type)
+
+    assert result is not None, ''
+
+    match len(result.group('Star')):
+        case 1:
+            return prepare_pointer(result.group('Type'), position)
+        case 2:
+            return prepare_double_pointer(result.group('Type'), position)
+        case _:
+            return prepare_type(result.group('Type'), position)
 
 
 class CPP:
@@ -103,8 +160,13 @@ class CPP:
 
     def run(self) -> None:
         for function in self._functions.project_functions:
-            for argument in sorted(function.arguments, key=attrgetter('position')):
-                prepare_argument(argument_type=argument.type)
+            arguments = [
+                prepare_argument(argument_type=argument.type, position=argument.position)
+                for argument in sorted(function.arguments, key=attrgetter('position'))
+            ]
+
+            print('\n'.join(map(itemgetter(0), arguments)))
+            print(f'{function.name}({",".join(map(itemgetter(1), arguments))})')
 
 
 def main():
