@@ -2,8 +2,9 @@ import shutil
 from pathlib import Path
 from typing import Any, Type, final
 
+import click
+
 from isis.exceptions import IsisException
-from isis.settings import settings
 from isis.utils import is_cmd_available, exec_cmd
 
 
@@ -21,25 +22,25 @@ class BaseQL:
             self,
             codeql_cmd: str,
             source: str,
-            project_directory: str,
     ):
         self._codeql_cmd = codeql_cmd
-        self._source = source
-        self._project_directory = Path(project_directory)
+        self._source = Path(source)
 
         assert is_cmd_available(self._codeql_cmd) is True, 'Not found CodeQL.'
         assert self.LANGUAGE is not None, 'Langauge should be defined.'
 
         self._create_output_directory()
         self._create_database_directory()
-        self._init_database()
 
     def __init_subclass__(cls) -> None:
         LANGUAGE_QL_MAP[cls.__name__.lower()] = cls
 
+    def init_database(self) -> None:
+        exec_cmd(self._create_database_cmd)
+
     def update_database(self) -> None:
         shutil.rmtree(self._database)
-        self._init_database()
+        self.init_database()
 
     def run_query(self, query: str) -> None:
         exec_cmd(self._codeql_query_cmd(query))
@@ -47,7 +48,7 @@ class BaseQL:
 
     @property
     def _root(self) -> Path:
-        return self._project_directory / ROOT
+        return self._source / ROOT
 
     @property
     def _database(self) -> Path:
@@ -59,9 +60,6 @@ class BaseQL:
     def _create_database_directory(self) -> None:
         Path(self._database).mkdir(parents=True, exist_ok=True)
 
-    def _init_database(self) -> None:
-        exec_cmd(self._create_database_cmd)
-
     @property
     def _create_database_cmd(self) -> list[str]:
         return [
@@ -69,7 +67,7 @@ class BaseQL:
             'database', 'create',
             str(self._database),
             f'--language={self.LANGUAGE}',
-            f'--source-root={self._source}',
+            f'--source-root={str(self._source)}',
             '--overwrite',
         ]
 
@@ -122,11 +120,16 @@ class CodeQL:
 codeql = CodeQL()
 
 
-if __name__ == '__main__':
-    cpp_codeql = codeql(
-        'cpp',
-        codeql_cmd=settings['codeQL'],
-        source=settings['source'],
-        project_directory=settings['project_directory'],
-    )
-    cpp_codeql.run_query('function.ql')
+@click.command(name='create_database')
+@click.option('-l', '--language',
+              type=click.Choice(tuple(LANGUAGE_QL_MAP.keys())))
+@click.option('-ql', '--codeql_cmd',
+              type=click.Path(dir_okay=False, resolve_path=True))
+@click.option('-s', '--source',
+              type=click.Path(file_okay=False, resolve_path=True))
+def create_database(language, codeql_cmd, source):
+    codeql(
+        language,
+        codeql_cmd=codeql_cmd,
+        source=source,
+    ).init_database()
