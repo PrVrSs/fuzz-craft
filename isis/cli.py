@@ -1,6 +1,6 @@
 import click
 
-from isis.codeql import create_database
+from .commands import create_database
 
 
 @click.group()

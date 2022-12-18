@@ -2,10 +2,8 @@ import shutil
 from pathlib import Path
 from typing import Any, Type, final
 
-import click
-
-from isis.exceptions import IsisException
-from isis.utils import is_cmd_available, exec_cmd
+from .exceptions import IsisException
+from .utils import is_cmd_available, exec_cmd
 
 
 ROOT: str = '.codeql'
@@ -118,18 +116,3 @@ class CodeQL:
 
 
 codeql = CodeQL()
-
-
-@click.command(name='create_database')
-@click.option('-l', '--language',
-              type=click.Choice(tuple(LANGUAGE_QL_MAP.keys())))
-@click.option('-ql', '--codeql_cmd',
-              type=click.Path(dir_okay=False, resolve_path=True))
-@click.option('-s', '--source',
-              type=click.Path(file_okay=False, resolve_path=True))
-def create_database(language, codeql_cmd, source):
-    codeql(
-        language,
-        codeql_cmd=codeql_cmd,
-        source=source,
-    ).init_database()
