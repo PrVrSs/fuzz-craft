@@ -1,6 +1,6 @@
-from ..codeql import codeql, LANGUAGE_QL_MAP
-
 import click
+
+from isis.codeql import codeql, LANGUAGE_QL_MAP
 
 
 @click.command(name='create_database')

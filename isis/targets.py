@@ -2,15 +2,13 @@ import re
 from collections import defaultdict
 from functools import cached_property
 from operator import attrgetter, itemgetter
-from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple, Iterator
 
 import lief
 
-from isis.constants import SHARED_LIB
-from isis.utils import read_csv, get_mime
-from isis.settings import settings
-from isis.libfuzzer import ConsumeIntegral, ConsumeBool, ConsumeFloatingPoint
+from .libfuzzer import ConsumeIntegral, ConsumeBool, ConsumeFloatingPoint
+from .file_manager import FileManager
+from .utils import read_csv
 
 
 class CPPFunctionArgumentSchema(NamedTuple):
@@ -54,20 +52,6 @@ def cpp_function_ql(file: str) -> list[CPPFunctionSchema]:
         ))
 
     return convert_ql_to_schema(data=data)
-
-
-class Function:
-    def __init__(self, project: str, functions_meta: list[CPPFunctionSchema]):
-        self._project = project
-        self._meta = functions_meta
-
-    @cached_property
-    def project_functions(self) -> list[CPPFunctionSchema]:
-        return [
-            function
-            for function in self._meta
-            if Path(self._project) in Path(function.location).parents and function.name != 'main'
-        ]
 
 
 class File:
@@ -115,7 +99,7 @@ def prepare_pointer(argument: str, number: int) -> tuple[str, str]:
     template_argument_ptr = f'{argument} *ptr_{number} = &argument_{number};'
     template_param = f'ptr_{number}'
 
-    return '\n'.join([template_argument, template_argument_ptr]), template_param
+    return '\n\t'.join([template_argument, template_argument_ptr]), template_param
 
 
 def prepare_type(argument: str, number: int):
@@ -142,40 +126,50 @@ def prepare_argument(argument_type, position):
             return prepare_type(result.group('Type'), position)
 
 
-class CPP:
-    def __init__(self, directory: str, function_ql: str):
-        self._directory = directory
-        self._functions = Function(
-            project=self._directory,
+class Function:
+    def __init__(self, file_manager: FileManager, functions_meta: list[CPPFunctionSchema]):
+        self._file_manager = file_manager
+        self._meta = functions_meta
+
+    @cached_property
+    def project_functions(self) -> list[CPPFunctionSchema]:
+        return [
+            function
+            for function in self._meta
+            if self._file_manager.in_project(function.location) and function.name != 'main'
+        ]
+
+
+class Result(NamedTuple):
+    name: str
+    data: Any
+
+
+class Targets:
+    def __init__(self, file_manager: FileManager):
+        self._file_manager = file_manager
+
+    def generate(self, function_ql: str) -> Iterator[Result]:
+        raise NotImplementedError
+
+
+class CPP(Targets):
+    def generate(self, function_ql: str) -> Iterator[Result]:
+        functions = Function(
+            file_manager=self._file_manager,
             functions_meta=cpp_function_ql(file=function_ql),
         )
 
-    @cached_property
-    def shared_object(self) -> list[str]:
-        return [
-            str(file)
-            for file in Path(self._directory).rglob('*')
-            if get_mime(str(file)) == SHARED_LIB
-        ]
-
-    def run(self) -> None:
-        for function in self._functions.project_functions:
+        for function in functions.project_functions:
             arguments = [
                 prepare_argument(argument_type=argument.type, position=argument.position)
                 for argument in sorted(function.arguments, key=attrgetter('position'))
             ]
 
-            print('\n'.join(map(itemgetter(0), arguments)))
-            print(f'{function.name}({",".join(map(itemgetter(1), arguments))})')
-
-
-def main():
-    cpp = CPP(
-        directory=settings['source'],
-        function_ql=settings['decode_result'],
-    )
-    cpp.run()
-
-
-if __name__ == '__main__':
-    main()
+            yield Result(
+                name=function.name,
+                data=(
+                    '\n\t'.join(map(itemgetter(0), arguments)),
+                    f'{function.name}({",".join(map(itemgetter(1), arguments))})',
+                ),
+            )
