@@ -1,0 +1,49 @@
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <dlfcn.h>
+#include <stdio.h>
+
+typedef {{ return_type }}(*fptr_type)({{ annotation }});
+
+fptr_type LoadLibrary();
+void CloseLibrary();
+void* handle=NULL;
+
+void CloseLibrary()
+{
+    if(handle)
+    {
+        dlclose(handle);
+        handle=NULL;
+    }
+}
+
+fptr_type LoadLibrary()
+{
+    char *error;
+
+    handle = dlopen({{ shared_path }}, RTLD_LAZY);
+    if (!handle) {
+        fputs(dlerror(), stderr);
+        exit(1);
+    }
+
+    fptr_type fptr = ({{ return_type }} (*)({{ annotation }}))dlsym(handle, {{ function_name }});
+    if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "%s\n", error);
+        exit(1);
+    }
+
+    return fptr;
+}
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    auto fptr = LoadLibrary();
+    (*fptr)({{ arguments }});
+
+    atexit(CloseLibrary);
+
+    return 0;
+}
