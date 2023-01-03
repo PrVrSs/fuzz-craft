@@ -5,7 +5,7 @@ from .constants import SHARED_LIB
 from .utils import get_mime
 
 
-ROOT: str = '.codeql'
+ROOT: str = '.isis'
 DATABASE: str = 'database'
 QUERIES: str = 'queries'
 HARNESS: str = 'harness'
@@ -21,7 +21,7 @@ class FileManager:
         self._create_harness_directory()
 
     @property
-    def source(self):
+    def source(self) -> Path:
         return self._source
 
     @property
@@ -46,6 +46,13 @@ class FileManager:
             str(file)
             for file in self._source.rglob('*')
             if get_mime(str(file)) == SHARED_LIB
+        ]
+
+    @cached_property
+    def py_source(self) -> list[str]:
+        return[
+            str(file)
+            for file in  self._source.rglob('*.py')
         ]
 
     def in_project(self, path: str) -> bool:

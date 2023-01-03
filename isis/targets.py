@@ -6,9 +6,12 @@ from typing import Any, NamedTuple, Iterator
 
 import lief
 
-from .libfuzzer import ConsumeIntegral, ConsumeBool, ConsumeFloatingPoint
+from isis.fuzzres.libfuzzer import ConsumeIntegral, ConsumeBool, ConsumeFloatingPoint
 from .file_manager import FileManager
 from .utils import read_csv
+
+
+CPP_FUNCTION_QL = dict[tuple[str, str, str], list[tuple[str, str]]]
 
 
 class CPPFunctionArgumentSchema(NamedTuple):
@@ -23,8 +26,7 @@ class CPPFunctionSchema(NamedTuple):
     location: str
 
 
-def convert_ql_to_schema(
-        data: dict[tuple[str, str, str], list[tuple[str, str]]]) -> list[CPPFunctionSchema]:
+def convert_ql_to_schema(data: CPP_FUNCTION_QL) -> list[CPPFunctionSchema]:
     return [
         CPPFunctionSchema(
             name=function,
@@ -109,13 +111,13 @@ def prepare_type(argument: str, number: int):
     return template_argument, template_param
 
 
-ARGUMENT_REGEXP = re.compile(r'^(?P<Type>\w+(\s\w+)?)\s?(?P<Star>\*{0,2})$')
+ARGUMENT_REGEXP = re.compile(r'^(?P<Type>(?:\s?\w+)+)\s?(?P<Star>\*{0,3})(?:\[\])?$')
 
 
 def prepare_argument(argument_type, position):
     result = ARGUMENT_REGEXP.match(argument_type)
-
-    assert result is not None, ''
+    if result is None:
+        return
 
     match len(result.group('Star')):
         case 1:
@@ -165,6 +167,9 @@ class CPP(Targets):
                 prepare_argument(argument_type=argument.type, position=argument.position)
                 for argument in sorted(function.arguments, key=attrgetter('position'))
             ]
+
+            if None in arguments:
+                continue
 
             yield Result(
                 name=function.name,

@@ -17,7 +17,7 @@ class Harness:
         self._template = Template(template=template)
 
     def run(self):
-        codeql_output = self._codeql.run_query('function.ql')
+        codeql_output = self._codeql.query('function.ql')
         data = self._targets.generate(function_ql=codeql_output)
 
         for function in data:

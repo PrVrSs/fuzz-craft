@@ -25,13 +25,15 @@ fptr_type LoadLibrary()
     char *error;
 
     handle = dlopen({{ shared_path }}, RTLD_LAZY);
-    if (!handle) {
+    if (!handle)
+    {
         fputs(dlerror(), stderr);
         exit(1);
     }
 
     fptr_type fptr = ({{ return_type }} (*)({{ annotation }}))dlsym(handle, {{ function_name }});
-    if ((error = dlerror()) != NULL)  {
+    if ((error = dlerror()) != NULL)
+    {
         fprintf(stderr, "%s\n", error);
         exit(1);
     }

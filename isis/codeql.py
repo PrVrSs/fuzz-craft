@@ -24,17 +24,16 @@ class BaseQL:
     def __init_subclass__(cls) -> None:
         LANGUAGE_QL_MAP[cls.__name__.lower()] = cls
 
-    def init_database(self) -> None:
-        exec_cmd(self._create_database_cmd)
+    def init_database(self, options: list[str] | None = None) -> None:
+        exec_cmd(self._create_database_cmd(options or []))
 
-    def run_query(self, query: str) -> str:
+    def query(self, query: str) -> str:
         exec_cmd(self._codeql_query_cmd(query))
         exec_cmd(self._decode_cmd(query))
 
         return str((self._file_manager.queries / query).with_suffix('.csv'))
 
-    @property
-    def _create_database_cmd(self) -> list[str]:
+    def _create_database_cmd(self, options: list[str]) -> list[str]:
         return [
             self._codeql_cmd,
             'database', 'create',
@@ -42,6 +41,7 @@ class BaseQL:
             f'--language={self.LANGUAGE}',
             f'--source-root={str(self._file_manager.source)}',
             '--overwrite',
+            *options,
         ]
 
     def _codeql_query_cmd(self, query_file: str) -> list[str]:
@@ -73,13 +73,6 @@ class PY(BaseQL):
 class CPP(BaseQL):
     LANGUAGE = 'cpp'
     QUERY_PATH = QUERIES_BASE_PATH / 'c-cpp'
-
-    @property
-    def _create_database_cmd(self) -> list[str]:
-        return [
-            *super()._create_database_cmd,
-            '--command=make',
-        ]
 
 
 class CodeQL:
