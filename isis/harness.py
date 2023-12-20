@@ -1,12 +1,15 @@
+import json
+
+from llama_index.llms import OpenAI
+
 from isis.codeql import codeql
-from isis.settings import settings
-from isis.template import TemplateEnum, Template
-from isis.targets import CPP
 from isis.file_manager import FileManager
+from isis.targets import CPP
+from isis.template import Template
 
 
 class Harness:
-    def __init__(self, source, codeql_cmd, template, language):
+    def __init__(self, source, codeql_cmd, template, language, api_key):
         self._file_manager = FileManager(source=source)
         self._codeql = codeql(
             language,
@@ -15,20 +18,27 @@ class Harness:
         )
         self._targets = CPP(file_manager=self._file_manager)
         self._template = Template(template=template)
+        self._llm = OpenAI(
+            temperature=0,
+            model='gpt-3.5-turbo',
+            api_key=api_key,
+        )
 
     def run(self):
         codeql_output = self._codeql.query('function.ql')
         data = self._targets.generate(function_ql=codeql_output)
 
         for function in data:
+            query = self._template.render(
+                example_code=json.dumps(
+                    {
+                        'source': function.location,
+                        'annotation': str(function)
+                    },
+                    indent=2,
+                )
+            )
+            response = self._llm.complete(query)
+
             output = (self._file_manager.harness / function.name).with_suffix('.cc')
-            output.write_text(self._template.render(function_body='\n\t'.join(function.data)))
-
-
-if __name__ == '__main__':
-    Harness(
-        source=settings['source'],
-        codeql_cmd=settings['codeQL'],
-        template=TemplateEnum.C_CPP_LIBFUZZER,
-        language='cpp',
-    ).run()
+            output.write_text(response.text)

@@ -9,8 +9,7 @@ TEMPLATES_PATH = Path(__file__).parent.resolve() / 'templates'
 
 
 class TemplateEnum(Enum):
-    PY_ATHERIS = 'py_atheris'
-    C_CPP_LIBFUZZER = 'c_cpp_libfuzzer'
+    LIBFUZZER = 'libfuzzer'
 
 
 class Template:

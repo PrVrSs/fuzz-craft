@@ -1,10 +1,10 @@
 import ast
 import tokenize
-from typing import Any, NamedTuple
 from itertools import chain
+from typing import Any, NamedTuple
 
-from isis.settings import settings
 from isis.file_manager import FileManager
+from isis.settings import settings
 
 
 def read_lines(filename: str) -> list[str]:

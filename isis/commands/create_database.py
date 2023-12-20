@@ -1,6 +1,7 @@
 import click
 
-from isis.codeql import codeql, LANGUAGE_QL_MAP
+from isis.codeql import LANGUAGE_QL_MAP, codeql
+from isis.file_manager import FileManager
 
 
 @click.command(name='create_database')
@@ -10,9 +11,9 @@ from isis.codeql import codeql, LANGUAGE_QL_MAP
               type=click.Path(dir_okay=False, resolve_path=True))
 @click.option('-s', '--source',
               type=click.Path(file_okay=False, resolve_path=True))
-def cli(language, codeql_cmd, source):
+def cli(language: str, codeql_cmd: str, source: str):
     codeql(
         language,
         codeql_cmd=codeql_cmd,
-        source=source,
+        file_manager=FileManager(source=source),
     ).init_database()

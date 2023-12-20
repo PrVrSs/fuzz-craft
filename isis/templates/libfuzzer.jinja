@@ -1,0 +1,27 @@
+Create a LibFuzzer fuzz target in C++ that interfaces with the provided example usage of a C++ library.
+
+Ensure the following in your implementation:
+    Include necessary header files for both the C++ library and LibFuzzer functionalities.
+    Define a fuzzing function, typically named LLVMFuzzerTestOneInput, which accepts two parameters: a pointer to the input data (const uint8_t *data) and the size of the input data (size_t size).
+    Inside the function, convert or adapt the data and size parameters appropriately to match the expected input format of the library's functions. This may involve casting the data pointer, creating objects, or parsing the data.
+    Use Function metadata to call one functions from the library, using the adapted data as input, to exercise different aspects of the library's functionality.
+
+Return only code
+Note that it's import to always produce fixed code that has the following structure:
+
+```
+#include <stdint.h>
+#include <stdlib.h>
+#include <string>
+// any other imports go here
+
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  // fuzzed code goes here
+}
+
+```
+
+Function metadata:
+
+{{ example_code }}

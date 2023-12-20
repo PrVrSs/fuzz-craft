@@ -1,14 +1,14 @@
 import re
 from collections import defaultdict
 from functools import cached_property
-from operator import attrgetter, itemgetter
-from typing import Any, NamedTuple, Iterator
+from typing import Any, Iterator, NamedTuple
 
 import lief
 
-from isis.fuzzres.libfuzzer import ConsumeIntegral, ConsumeBool, ConsumeFloatingPoint
-from .file_manager import FileManager
-from .utils import read_csv
+from isis.file_manager import FileManager
+from isis.fuzzers.libfuzzer import ConsumeBool, ConsumeFloatingPoint, ConsumeIntegral
+from isis.log import logger
+from isis.utils import read_csv
 
 
 CPP_FUNCTION_QL = dict[tuple[str, str, str], list[tuple[str, str]]]
@@ -24,6 +24,9 @@ class CPPFunctionSchema(NamedTuple):
     arguments: list[CPPFunctionArgumentSchema]
     return_type: str
     location: str
+
+    def __str__(self):
+        return f'{self.return_type} {self.name}({", ".join([f"{argument.type} arg_{index}" for index, argument in enumerate(self.arguments)])})'
 
 
 def convert_ql_to_schema(data: CPP_FUNCTION_QL) -> list[CPPFunctionSchema]:
@@ -156,25 +159,12 @@ class Targets:
 
 
 class CPP(Targets):
-    def generate(self, function_ql: str) -> Iterator[Result]:
+    def generate(self, function_ql: str) -> list[CPPFunctionSchema]:
         functions = Function(
             file_manager=self._file_manager,
             functions_meta=cpp_function_ql(file=function_ql),
         )
 
-        for function in functions.project_functions:
-            arguments = [
-                prepare_argument(argument_type=argument.type, position=argument.position)
-                for argument in sorted(function.arguments, key=attrgetter('position'))
-            ]
+        logger.info(f'Found {len(functions.project_functions)} functions')
 
-            if None in arguments:
-                continue
-
-            yield Result(
-                name=function.name,
-                data=(
-                    '\n\t'.join(map(itemgetter(0), arguments)),
-                    f'{function.name}({",".join(map(itemgetter(1), arguments))})',
-                ),
-            )
+        return functions.project_functions
