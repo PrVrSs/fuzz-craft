@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from llama_index.llms import OpenAI
 
@@ -30,9 +31,10 @@ class Harness:
 
         for function in data:
             query = self._template.render(
-                example_code=json.dumps(
+                source=str(Path(function.location).name),
+                metadata=json.dumps(
                     {
-                        'source': function.location,
+                        'source': str(Path(function.location).name),
                         'annotation': str(function)
                     },
                     indent=2,

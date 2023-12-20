@@ -13,6 +13,7 @@ Note that it's import to always produce fixed code that has the following struct
 #include <stdint.h>
 #include <stdlib.h>
 #include <string>
+#include "{{ source }}"
 // any other imports go here
 
 
@@ -24,4 +25,4 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
 Function metadata:
 
-{{ example_code }}
+{{ metadata }}
