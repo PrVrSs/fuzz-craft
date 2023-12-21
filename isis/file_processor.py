@@ -1,10 +1,8 @@
 import ast
 import tokenize
-from itertools import chain
 from typing import Any, NamedTuple
 
 from isis.file_manager import FileManager
-from isis.settings import settings
 
 
 def read_lines(filename: str) -> list[str]:
@@ -85,14 +83,3 @@ class Processor:
             FunctionVisitor().run(node=make_ast(read_lines(filename=py_file)))
             for py_file in self._file_manager.py_source
         ]
-
-
-def main():
-    funcs = Processor(file_manager=FileManager(source=settings['source'])).run()
-
-    for func in chain.from_iterable(funcs):
-        print(f'{func.name}: {func.is_full_annotated}')
-
-
-if __name__ == '__main__':
-    main()
