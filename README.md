@@ -1,10 +1,11 @@
-# Isis
+# FuzzCraft
 
+*FuzzCraft is a specialized toolkit designed for the efficient creation of fuzzing harnesses.*
 
 ## Quickstart
 
 ```bash
-pip install isis
+pip install fuzz-craft
 ```
 
 ## Requirements
@@ -20,4 +21,4 @@ Any help is welcome and appreciated.
 
 ## License
 
-*Isis* is licensed under the terms of the Apache-2.0 License (see the file LICENSE).
+*FuzzCraft* is licensed under the terms of the Apache-2.0 License (see the file LICENSE).
