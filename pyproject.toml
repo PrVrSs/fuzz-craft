@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fuzz-craft"
-version = "0.0.1"
+version = "0.0.2"
 description = "Toolkit for creating fuzzing harnesses."
 authors = ["Sergey Reshetnikov <resh.sersh@gmail.com>"]
 license = "Apache-2.0"
