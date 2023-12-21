@@ -20,7 +20,7 @@ void printSimple(int n) {
 }
 
 
-bool VulnerableFunction(const uint8_t* data, size_t size) {
+bool vulnerableFunction(const uint8_t* data, size_t size) {
   bool result = false;
   if (size >= 3) {
     result = data[0] == 'F' &&

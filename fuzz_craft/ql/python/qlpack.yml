@@ -1,4 +1,4 @@
-name: fuzz_craft/python
+name: fuzzcraft/python
 version: 0.0.0-dev
 extractor: python
 library: true

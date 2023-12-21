@@ -5,6 +5,6 @@
 
 void printSimple(int n);
 
-bool VulnerableFunction(const uint8_t* data, size_t size);
+bool vulnerableFunction(const uint8_t* data, size_t size);
 
 #endif // COMMON_H

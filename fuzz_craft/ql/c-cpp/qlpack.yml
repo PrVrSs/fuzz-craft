@@ -1,4 +1,4 @@
-name: fuzz_craft/cpp
+name: fuzzcraft/cpp
 version: 0.0.0-dev
 extractor: cpp
 library: true

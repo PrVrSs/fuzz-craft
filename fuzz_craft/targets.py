@@ -26,7 +26,7 @@ class CPPFunctionSchema(NamedTuple):
     location: str
 
     def __str__(self):
-        return f'{self.return_type} {self.name}({", ".join([f"{argument.type} arg_{index}" for index, argument in enumerate(self.arguments)])})'
+        return f'{self.return_type} {self.name}({", ".join([f"{argument.type} arg_{index}" for index, argument in enumerate(self.arguments[::-1])])})'
 
 
 def convert_ql_to_schema(data: CPP_FUNCTION_QL) -> list[CPPFunctionSchema]:
