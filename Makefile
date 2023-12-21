@@ -6,11 +6,11 @@ unit:
 
 .PHONY: mypy
 mypy:
-	poetry run mypy isis
+	poetry run mypy fuzz_craft
 
 .PHONY: lint
 lint:
-	poetry run pylint isis
+	poetry run pylint fuzz_craft
 
 .PHONY: test
 test: mypy lint unit
