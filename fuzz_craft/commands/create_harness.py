@@ -2,9 +2,9 @@ from operator import attrgetter
 
 import click
 
-from isis.codeql import LANGUAGE_QL_MAP
-from isis.harness import Harness
-from isis.template import TemplateEnum
+from fuzz_craft.codeql import LANGUAGE_QL_MAP
+from fuzz_craft.harness import Harness
+from fuzz_craft.template import TemplateEnum
 
 
 @click.command(name='create_harness')

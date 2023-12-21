@@ -5,10 +5,10 @@ from typing import Any, Iterator, NamedTuple
 
 import lief
 
-from isis.file_manager import FileManager
-from isis.fuzzers.libfuzzer import ConsumeBool, ConsumeFloatingPoint, ConsumeIntegral
-from isis.log import logger
-from isis.utils import read_csv
+from fuzz_craft.file_manager import FileManager
+from fuzz_craft.fuzzers.libfuzzer import ConsumeBool, ConsumeFloatingPoint, ConsumeIntegral
+from fuzz_craft.log import logger
+from fuzz_craft.utils import read_csv
 
 
 CPP_FUNCTION_QL = dict[tuple[str, str, str], list[tuple[str, str]]]

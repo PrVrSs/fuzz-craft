@@ -1,0 +1,2 @@
+class FuzzCraftException(Exception):
+    pass

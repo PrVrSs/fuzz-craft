@@ -5,7 +5,7 @@ from .constants import SHARED_LIB
 from .utils import get_mime
 
 
-ROOT: str = '.isis'
+ROOT: str = '.fuzz_craft'
 DATABASE: str = 'database'
 QUERIES: str = 'queries'
 HARNESS: str = 'harness'

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Type, final
 
-from .exceptions import IsisException
+from .exceptions import FuzzCraftException
 from .file_manager import FileManager
 from .utils import exec_cmd, is_cmd_available
 
@@ -80,7 +80,7 @@ class CodeQL:
         try:
             return LANGUAGE_QL_MAP[language](**kwargs)
         except KeyError:
-            raise IsisException(f'Not supported: {language}') from None
+            raise FuzzCraftException(f'Not supported: {language}') from None
 
 
 codeql = CodeQL()

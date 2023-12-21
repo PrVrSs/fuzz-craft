@@ -3,10 +3,10 @@ from pathlib import Path
 
 from llama_index.llms import OpenAI
 
-from isis.codeql import codeql
-from isis.file_manager import FileManager
-from isis.targets import CPP
-from isis.template import Template
+from fuzz_craft.codeql import codeql
+from fuzz_craft.file_manager import FileManager
+from fuzz_craft.targets import CPP
+from fuzz_craft.template import Template
 
 
 class Harness:

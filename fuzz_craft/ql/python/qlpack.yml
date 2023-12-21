@@ -1,4 +1,4 @@
-name: isis/python
+name: fuzz_craft/python
 version: 0.0.0-dev
 extractor: python
 library: true

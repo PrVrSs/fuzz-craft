@@ -1,4 +1,4 @@
-name: isis/cpp
+name: fuzz_craft/cpp
 version: 0.0.0-dev
 extractor: cpp
 library: true

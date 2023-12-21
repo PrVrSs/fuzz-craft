@@ -1,7 +1,7 @@
 import click
 
-from isis.codeql import LANGUAGE_QL_MAP, codeql
-from isis.file_manager import FileManager
+from fuzz_craft.codeql import LANGUAGE_QL_MAP, codeql
+from fuzz_craft.file_manager import FileManager
 
 
 @click.command(name='create_database')

@@ -2,7 +2,7 @@ import ast
 import tokenize
 from typing import Any, NamedTuple
 
-from isis.file_manager import FileManager
+from fuzz_craft.file_manager import FileManager
 
 
 def read_lines(filename: str) -> list[str]:

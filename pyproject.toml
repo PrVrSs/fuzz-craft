@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "isis"
+name = "fuzz-craft"
 version = "0.0.1"
-description = "Isis is a fuzzing harness."
+description = "Toolkit for creating fuzzing harnesses."
 authors = ["Sergey Reshetnikov <resh.sersh@gmail.com>"]
 license = "Apache-2.0"
 
 readme = "README.md"
-repository = "https://github.com/PrVrSs/isis"
-homepage = "https://github.com/PrVrSs/isis"
+repository = "https://github.com/PrVrSs/fuzz-craft"
+homepage = "https://github.com/PrVrSs/fuzz-craft"
 
 keywords = [
     "fuzzing",
